@@ -3,7 +3,7 @@ import re
 import streamlit as st
 
 # 🚀 全域系統版本號
-APP_VERSION = "v2.2.0 (Ocean Theme Edition)"
+APP_VERSION = "v2.2.1 (Ocean Theme & Nav Fixed)"
 
 # ==========================================
 # 🛡️ 防腐層：保留指定的原始結構與函數
@@ -580,7 +580,7 @@ def main():
       initial_sidebar_state="collapsed",
   )
 
-  # 🌊 海洋風格美學主題 CSS (Ocean Marine Theme)
+  # 🌊 全面修復與海洋美學 CSS 區塊
   st.markdown(
       """
     <style>
@@ -590,12 +590,34 @@ def main():
         color: #0F172A !important;
     }
 
-    /* 2. 全域文字顏色強制鎖定深藍灰，徹底解決暗色模式文字隱形問題 */
+    /* 2. 全域文字顏色強制鎖定深藍灰，解決暗色模式文字透明問題 */
     .stApp, .stApp p, .stApp label, .stApp span, div[role="radiogroup"] p, div[role="radiogroup"] label {
         color: #0F172A !important;
     }
 
-    /* 3. 標題海洋藍主題 */
+    /* 3. 🎯 修正主選單導覽列 (Segmented Control) 樣式 */
+    /* 未選中的按鈕 */
+    div[data-testid="stSegmentedControl"] button {
+        background-color: #FFFFFF !important;
+        color: #0284C7 !important;
+        border: 1px solid #BAE6FD !important;
+        font-weight: 600 !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+    }
+    /* 當前選中的按鈕 */
+    div[data-testid="stSegmentedControl"] button[aria-selected="true"] {
+        background-color: #0284C7 !important;
+        color: #FFFFFF !important;
+        border-color: #0284C7 !important;
+        font-weight: 700 !important;
+    }
+    /* 滑鼠懸停效果 */
+    div[data-testid="stSegmentedControl"] button:hover {
+        background-color: #E0F2FE !important;
+        color: #0369A1 !important;
+    }
+
+    /* 4. 標題海洋藍主題 */
     h1 {
         color: #0284C7 !important;
         font-weight: 800 !important;
@@ -606,7 +628,7 @@ def main():
         color: #0369A1 !important;
     }
 
-    /* 4. 題目卡片設計：亮白底色 + 海洋藍邊框 + 輕質感陰影 */
+    /* 5. 題目卡片設計：亮白底色 + 海洋藍邊框 + 輕質感陰影 */
     .quiz-card {
         background-color: #FFFFFF !important;
         padding: 22px 26px;
@@ -618,21 +640,21 @@ def main():
         color: #0F172A !important;
     }
 
-    /* 5. 單選按鈕 (Radio Button) 顯色強化 */
+    /* 6. 單選按鈕 (Radio Button) 顯色強化 */
     div[data-testid="stRadio"] label p {
         color: #0F172A !important;
         font-weight: 600 !important;
         font-size: 1.02rem !important;
     }
 
-    /* 6. 海洋波浪分隔線 */
+    /* 7. 分隔線樣式 */
     hr {
         border-top: 2px solid #38BDF8 !important;
         opacity: 0.3;
         margin: 22px 0 !important;
     }
 
-    /* 7. 提示與警告訊息框美化 (淺黃暖藍) */
+    /* 8. 提示與警告訊息框美化 */
     div[data-testid="stAlert"] {
         border-radius: 10px !important;
         border: 1px solid #FDE68A !important;
@@ -642,7 +664,7 @@ def main():
         font-weight: 500 !important;
     }
 
-    /* 8. 海洋風格頁尾 */
+    /* 9. 頁尾 */
     .ocean-footer {
         text-align: center;
         color: #0369A1 !important;
@@ -732,7 +754,7 @@ def main():
     elif writing_sub == "問答":
       render_section("問答", db)
 
-  # 🌊 海洋風格頁尾
+  # 🌊 頁尾版權宣告
   st.markdown(
       f'<div class="ocean-footer">🌊 阿美語中高級認證學習平台 ｜ 系統版本：<b>{APP_VERSION}</b></div>',
       unsafe_allow_html=True,
