@@ -3,7 +3,7 @@ import re
 import streamlit as st
 
 # 🚀 全域系統版本號
-APP_VERSION = "v2.2.1 (Ocean Theme & Nav Fixed)"
+APP_VERSION = "v2.2.2 (Ocean Nav Pure-Light Edition)"
 
 # ==========================================
 # 🛡️ 防腐層：保留指定的原始結構與函數
@@ -580,7 +580,7 @@ def main():
       initial_sidebar_state="collapsed",
   )
 
-  # 🌊 全面修復與海洋美學 CSS 區塊
+  # 🌊 全面修復與海洋美學 CSS 區塊 (徹底解決黑框與黑字問題)
   st.markdown(
       """
     <style>
@@ -590,30 +590,61 @@ def main():
         color: #0F172A !important;
     }
 
-    /* 2. 全域文字顏色強制鎖定深藍灰，解決暗色模式文字透明問題 */
+    /* 2. 全域文字顏色強制鎖定深藍灰 */
     .stApp, .stApp p, .stApp label, .stApp span, div[role="radiogroup"] p, div[role="radiogroup"] label {
         color: #0F172A !important;
     }
 
-    /* 3. 🎯 修正主選單導覽列 (Segmented Control) 樣式 */
-    /* 未選中的按鈕 */
-    div[data-testid="stSegmentedControl"] button {
-        background-color: #FFFFFF !important;
-        color: #0284C7 !important;
+    /* 3. 🎯 徹底重修 st.segmented_control (導覽按鈕列) 外觀 */
+    
+    /* (A) 最外層的黑底條軌道：覆蓋為極淺藍 */
+    div[data-testid="stSegmentedControl"],
+    div[data-testid="stSegmentedControl"] > div {
+        background-color: #E0F2FE !important;
         border: 1px solid #BAE6FD !important;
-        font-weight: 600 !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+        border-radius: 12px !important;
+        padding: 4px !important;
     }
-    /* 當前選中的按鈕 */
+
+    /* (B) 未選中的按鈕：強制亮白背景、深藍文字 */
+    div[data-testid="stSegmentedControl"] button,
+    div[data-testid="stSegmentedControl"] button[aria-selected="false"] {
+        background-color: #FFFFFF !important;
+        color: #0369A1 !important;
+        border-radius: 8px !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* 強制修改未選中按鈕內部的文字與 Icon 顏色 */
+    div[data-testid="stSegmentedControl"] button p,
+    div[data-testid="stSegmentedControl"] button span,
+    div[data-testid="stSegmentedControl"] button[aria-selected="false"] p,
+    div[data-testid="stSegmentedControl"] button[aria-selected="false"] span {
+        color: #0369A1 !important;
+        font-weight: 600 !important;
+    }
+
+    /* (C) 已選中的按鈕：鮮艷海洋藍底 + 純白字 */
     div[data-testid="stSegmentedControl"] button[aria-selected="true"] {
         background-color: #0284C7 !important;
         color: #FFFFFF !important;
-        border-color: #0284C7 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25) !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button[aria-selected="true"] p,
+    div[data-testid="stSegmentedControl"] button[aria-selected="true"] span {
+        color: #FFFFFF !important;
         font-weight: 700 !important;
     }
-    /* 滑鼠懸停效果 */
+
+    /* (D) 滑鼠懸停 (Hover) 效果 */
     div[data-testid="stSegmentedControl"] button:hover {
-        background-color: #E0F2FE !important;
+        background-color: #BAE6FD !important;
+    }
+    div[data-testid="stSegmentedControl"] button:hover p,
+    div[data-testid="stSegmentedControl"] button:hover span {
         color: #0369A1 !important;
     }
 
@@ -754,7 +785,7 @@ def main():
     elif writing_sub == "問答":
       render_section("問答", db)
 
-  # 🌊 頁尾版權宣告
+  # 🌊 頁尾宣告
   st.markdown(
       f'<div class="ocean-footer">🌊 阿美語中高級認證學習平台 ｜ 系統版本：<b>{APP_VERSION}</b></div>',
       unsafe_allow_html=True,
