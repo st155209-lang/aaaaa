@@ -5,7 +5,7 @@ import os
 import re
 
 # 🚀 全域系統版本號
-APP_VERSION = "v2.1.4 (Build 20260727 - Exam Guide Link)"
+APP_VERSION = "v2.1.5 (Build 20260728 - Fix UI & File Path)"
 
 # ==========================================
 # 🛡️ 防腐層：保留指定的原始結構與函數
@@ -48,7 +48,7 @@ QUIZ_DATA = [
 ]
 
 # ==========================================
-# 🧠 動態解析引擎：跨行讀取與穩定分割版
+# 🧠 動態解析引擎：跨行讀取與全目錄搜尋版
 # ==========================================
 def load_question_bank():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -59,15 +59,14 @@ def load_question_bank():
         "看圖表達": [], "詞彙語意": [], "語言結構": [], "句子聽寫": [], "問答": []
     }
     
+    # 遞迴掃描目錄下的 TXT 檔
     scanned_files = []
     for d in [base_dir, cwd_dir]:
         if not os.path.exists(d): continue
-        try:
-            for f in os.listdir(d):
+        for root, dirs, files in os.walk(d):
+            for f in files:
                 if f.lower().endswith(".txt") and f.lower() not in ["app.txt", "requirements.txt", "提示詞.txt"]:
-                    scanned_files.append(os.path.join(d, f))
-        except:
-            pass
+                    scanned_files.append(os.path.join(root, f))
 
     target_content = ""
     file_loaded = False
@@ -90,7 +89,6 @@ def load_question_bank():
     if not file_loaded:
         return db
 
-    # 使用緩衝區將跨行的題目合併為單一字串
     current_section = None
     current_question = []
 
@@ -103,12 +101,10 @@ def load_question_bank():
 
     for line in target_content.split("\n"):
         line = line.strip()
-        # 遇到空行代表題目結束，存入題庫
         if not line:
             save_question()
             continue
             
-        # 判斷是否為題型切換標題
         if "一、選擇題（聽音選詞）" in line: save_question(); current_section = "聽音選詞"
         elif "二、選擇題（對話理解）" in line: save_question(); current_section = "對話理解"
         elif "三、段落朗讀" in line: save_question(); current_section = "段落朗讀"
@@ -119,30 +115,25 @@ def load_question_bank():
         elif "八、句子聽寫" in line: save_question(); current_section = "句子聽寫"
         elif "九、問答" in line: save_question(); current_section = "問答"
         
-        # 開頭為數字代表新題目的開始
         elif re.match(r'^\d+[\.、]', line):
             save_question()
             current_question.append(line)
-        # 屬於目前題目的後續內容（選項或答案）
         else:
             if current_question:
                 current_question.append(line)
                 
-    save_question() # 儲存最後一題
-            
+    save_question()
     return db
 
 # ==========================================
-# 🎨 終極 UI 渲染邏輯 (物理字串切割，100%保證顯示)
+# 🎨 終極 UI 渲染邏輯
 # ==========================================
 def render_mcq(line, prefix):
-    """渲染選擇題 (修復 split 回傳 list 的問題，並新增聽力題目隱藏功能)"""
     try:
         if "(A)" not in line:
             st.info(line)
             return
 
-        # 限制分割次數，並明確取值
         parts = line.split("(A)", 1)
         q_part = parts[0].strip()
         rest = "(A)" + parts[1]
@@ -163,7 +154,6 @@ def render_mcq(line, prefix):
             else:
                 ans_str = ans_ana.strip("。 ")
 
-        # 🌟 聽力測驗專屬：隱藏題目文字功能
         is_listening = "聽音選詞" in prefix or "對話理解" in prefix
         if is_listening:
             if st.toggle("👁️ 顯示題目文字", key=f"t_show_q_{prefix}"):
@@ -171,7 +161,6 @@ def render_mcq(line, prefix):
         else:
             st.markdown(f"**{q_part}**")
         
-        # 安全切割四個選項
         opts = []
         for tag in ["(A)", "(B)", "(C)", "(D)"]:
             if tag in opts_str:
@@ -199,7 +188,6 @@ def render_mcq(line, prefix):
         st.info(line) 
 
 def render_reading(line, prefix):
-    """渲染段落朗讀"""
     try:
         q_part = line
         ch_part = ""
@@ -220,7 +208,6 @@ def render_reading(line, prefix):
         st.info(line)
 
 def render_qa(line, prefix):
-    """渲染問答與情境問答"""
     try:
         text = line
         q_am = text
@@ -252,7 +239,6 @@ def render_qa(line, prefix):
         
         q_am = q_am.replace("題目：", " 題目：")
         
-        # 🌟 口說測驗-情境問答專屬：隱藏題目與提示功能
         is_situational = "情境問答" in prefix
         if is_situational:
             if st.toggle("👁️ 顯示題目與提示", key=f"t_show_q_{prefix}"):
@@ -274,7 +260,6 @@ def render_qa(line, prefix):
         st.info(line)
 
 def render_picture(line, prefix):
-    """渲染看圖表達，並支援動態載入對應題號圖片"""
     try:
         text = line
         pic = text
@@ -309,9 +294,7 @@ def render_picture(line, prefix):
             else:
                 hint = hint_part.strip()
         
-        # 🌟 動態讀取對應圖片邏輯 (假設 prefix 格式為 "看圖表達_0")
         try:
-            # 從 prefix 中解析題號 (index + 1)
             idx = int(prefix.split('_')[-1]) + 1
             img_path_jpg = f"assets/images/picture_{idx}.jpg"
             img_path_png = f"assets/images/picture_{idx}.png"
@@ -323,14 +306,13 @@ def render_picture(line, prefix):
             else:
                 st.info(f"🖼️ 圖片佔位區：若要顯示圖片，請將圖片命名為 `picture_{idx}.jpg` 或 `.png`，並放置於 `assets/images/` 資料夾中。")
         except:
-            pass # 若解析題號失敗則安全跳過
+            pass
 
         st.markdown(f"🖼️ **圖片情境：** {pic}")
         
         if hint:
             st.caption(f"中文提示：{hint}")
             
-        # 加入輸入框作為草稿區
         st.text_area("請在此作答：", key=f"input_{prefix}", label_visibility="collapsed", placeholder="可以在此輸入您的口說草稿...")
             
         if ans or ana:
@@ -343,7 +325,6 @@ def render_picture(line, prefix):
         st.info(line)
 
 def render_dictation(line, prefix):
-    """渲染句子聽寫"""
     try:
         text = line
         am = text
@@ -362,10 +343,8 @@ def render_dictation(line, prefix):
             else:
                 ch = text.strip()
         
-        # 加入作答的文字輸入框，模擬真實寫作情境
         st.text_area("請在此作答：", key=f"input_{prefix}", label_visibility="collapsed", placeholder="請在此輸入您聽寫的句子...")
         
-        # 🌟 寫作測驗專屬：隱藏聽寫原文功能
         if st.toggle("👁️ 顯示聽寫原文", key=f"t_show_dict_{prefix}"):
             st.markdown(f"✍️ **{am}**")
             
@@ -379,10 +358,9 @@ def render_dictation(line, prefix):
         st.info(line)
 
 def render_section(section_name, db):
-    """通用區塊渲染器"""
     questions = db.get(section_name, [])
     if not questions:
-        st.warning(f"⚠️ 系統抓不到【{section_name}】的資料。")
+        st.warning(f"⚠️ 系統抓不到【{section_name}】的資料。請確認題庫 TXT 檔案已上傳至 GitHub。")
         return
 
     for i, line in enumerate(questions):
@@ -401,29 +379,32 @@ def render_section(section_name, db):
             st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
-# 🚀 應用程式主邏輯 (Main) - 現代極簡風格 (Minimalist Style)
+# 🚀 應用程式主邏輯 (Main)
 # ==========================================
 def main():
     st.set_page_config(page_title="中高級認證", page_icon="🎓", layout="centered", initial_sidebar_state="collapsed")
 
-    # 現代極簡質感 (Clean Minimalist Design) CSS
+    # 🔧 修正後的強效 CSS (確保文字深色透明度正常顯示，修復 Streamlit Cloud 主題衝突)
     st.markdown("""
     <style>
-    /* 全局背景與字型設定 */
-    .stApp {
-        background-color: #FAFAFA;
-        color: #1F2937;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* 全局深灰色文字，確保清晰高對比 */
+    .stApp, .stApp p, .stApp label, div[role="radiogroup"] p, div[role="radiogroup"] label {
+        color: #1F2937 !important;
     }
 
-    /* 標題樣式 */
-    h1, h2, h3 {
-        color: #111827 !important;
-        font-weight: 600 !important;
-        letter-spacing: -0.02em;
+    /* 單選按鈕 (Radio Button) 文字顯色強化 */
+    div[data-testid="stRadio"] label p {
+        color: #1F2937 !important;
+        font-weight: 500 !important;
+        font-size: 1rem !important;
     }
 
-    /* 題目卡片：白底、俐落微邊框與極輕陰影 */
+    /* 警告與訊息框文字修正 (警告框背景黃底黑字) */
+    div[data-testid="stAlert"] p {
+        color: #856404 !important;
+    }
+
+    /* 題目卡片樣式 */
     .quiz-card {
         background-color: #FFFFFF;
         padding: 20px 24px;
@@ -432,23 +413,12 @@ def main():
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         margin-top: 16px;
         margin-bottom: 20px;
-        transition: border-color 0.2s ease;
+        color: #1F2937 !important;
     }
 
-    .quiz-card:hover {
-        border-color: #D1D5DB;
-    }
-
-    /* 分隔線 */
     hr {
         border-top: 1px solid #E5E7EB !important;
         margin: 20px 0 !important;
-    }
-
-    /* 頁尾文字 */
-    .caption-text {
-        color: #6B7280;
-        font-size: 0.85rem;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -472,7 +442,6 @@ def main():
     db = load_question_bank()
 
     if current_tab == "📋 認證考試說明":
-        # 🌟 更新這裡：加入您提供的超連結[cite: 2]
         st.subheader("📋 [認證考試說明](https://lokahsu.ilrdf.org.tw/web_lokahsu/Files/Guide/1_20251211_162558.pdf)")
         st.divider()
         st.info("請透過上方導覽列選擇您要進行的測驗項目。系統將自動從資料庫載入完整題庫。")
@@ -516,7 +485,7 @@ def main():
             render_section("問答", db)
 
     st.write("---")
-    st.caption(f"© 2026 中高級認證 App  ｜ 系統版本： **{APP_VERSION}** ")
+    st.caption(f"© 2026 中高級認證 App 三一開發團隊 ｜ 系統版本： **{APP_VERSION}** ")
 
 if __name__ == "__main__":
     main()
