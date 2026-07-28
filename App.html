@@ -1,3 +1,29 @@
+import streamlit as st
+
+# 1. 設定網頁分頁標題
+st.set_page_config(page_title="Nga'ay ho! 問候語守衛戰", page_icon="🎮")
+
+# 2. 把你原本「完整的 HTML 程式碼」全部塞在下面這兩個三雙引號的中間
+my_html_game = """
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nga'ay ho! 問候語守衛戰</title>
+<link rel="preconnect" href="https://googleapis.com">
+<link href="https://googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+
+  /* 這裡請繼續接上你原本後面所有的 CSS 樣式、HTML 內容，以及 JavaScript 程式碼 */
+  /* 也就是你原先寫的幾百行程式，都要完整留在這裡面 */
+
+</html>
+"""
+
+# 3. 最後讓 Streamlit 去讀取並顯示上面那一整包網頁（高、寬度可以自由調整）
+st.components.v1.html(my_html_game, height=800, scrolling=True)
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
