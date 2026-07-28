@@ -516,7 +516,7 @@ def main():
             render_section("問答", db)
 
     st.write("---")
-    st.caption(f"© 2026 中高級認證 App 三一開發團隊 ｜ 系統版本： **{APP_VERSION}** ")
+    st.caption(f"© 2026 中高級認證 App  ｜ 系統版本： **{APP_VERSION}** ")
 
 if __name__ == "__main__":
     main()
